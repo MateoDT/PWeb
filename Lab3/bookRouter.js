@@ -1,69 +1,90 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./database.js');
+const bookDb = require('./database.js');
 
-
+const book = {
+	title: String,
+	author: String
+}
+  
 router.use(express.json());
-router.post('/', (req, res) => {
 
-	try {
-		const bookTitl = req.query.title;
-		const bookAuth = req.query.author;
-
-		const book = {
-			title: bookTitl,
-			author: bookAuth
+router.get('/', (req, res) => {
+	try	{
+		const autor = req.query.author;
+		
+		if (!autor) {
+			res.status(201).send(bookDb.getAllFromDb());
+		} else {
+			res.status(201).send(bookDb.getFromDbByAuthor(autor));	 	
 		}
-
-		db.insertIntoDb(book);
-		res.status(200).json(book);
-	} catch(error) {
-		res.status(404).send("Nu s-a putut face inserarea");
+	} catch (error) {
+		res.status(400).send("Nu s-a putut aduce continutul");
 	}
-	
 });
 
 router.get('/:id', (req, res) => {
-	try {
-		const paramId = req.params.id;
-		const response = db.getFromDbById(paramId)
-		res.status(200).send(response);
-	} catch(error) {
-		res.status(404).send(response);
-	}
-	
-});
+	try	{
+		const id = req.params.id;
+		const book = bookDb.getFromDbById(id);
 
-router.get('/', (req, res) => {
-	try {
-		const paramAuth = req.query.author;
-		if(paramAuth) {
-			res.send(db.getFromDbByAuthor(paramAuth));
-		}
-		else {
-			res.send(db.getAllFromDb());
-		}
-		
-	} catch(error) {
-		res.status(404).send("Eroare la aducerea continutului");
-	}
-	
-});
+		res.status(201).send(book);
 
+	} catch (error) {
+		res.status(400).send("Nu s-a putut aduce continutul");
+	}
+});
+	 
+router.post('/', (req, res) => {
+	try	{
+		book.title = req.body.title;
+		book.author = req.body.author;
+
+		bookDb.insertIntoDb(book);
+		res.status(201).send("S-a produs inserarea");
+	
+	} catch (error) {
+		res.status(400).send("Eroare la inserare");
+	}
+});
+  
 router.put('/:id', (req, res) => {
-	try {
-		const paramId = req.params.id;
-		if(paramId) {
-			res.send(db.updateById(paramAuth));
-		}
-		else {
-			res.send(db.getAllFromDb());
-		}
-		
-	} catch(error) {
-		res.status(404).send("Eroare la actualizarea continutului");
+	try	{
+		const id = req.params.id;
+
+		bookDb.updateById(id, req.body);
+		res.status(200).send("S-a produs actualizarea");
+
+	} catch (error) {
+		res.status(400).send("Eroare la actualizare");
 	}
-	
+});
+
+router.delete('/', (req, res) => {
+	try	{
+		const autor = req.query.author;
+		
+		if (!autor) {
+			bookDb.purgeDb();
+			res.status(200).send("Stergere a intregii baze de date efectuata");
+		} else {
+			bookDb.removeFromDbByAuthor(autor);
+			res.status(200).send("Stergere dupa autor efectuata");
+		}
+	} catch (error) {
+		res.status(400).send("Bad request");
+	}
+});
+  
+router.delete('/:id', (req, res) => {
+	try	{
+		const id = req.params.id;
+		
+		bookDb.removeFromDbById(id);
+		res.status(200).send("Deleted (id)");
+	} catch (error) {
+		res.status(400).send("Bad request");
+	}
 });
 
 module.exports = router;
