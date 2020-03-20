@@ -1,5 +1,0 @@
-git init
-git remote add origin https://gitlab.com/programareweb2020/Tita-MateiDimitrie.git
-git add <ceva>
-git commit -m "Initial commit"
-git push -u origin master
