@@ -14,9 +14,9 @@ router.get('/', (req, res) => {
 		const autor = req.query.author;
 		
 		if (!autor) {
-			res.status(201).send(bookDb.getAllFromDb());
+			res.status(200).send(bookDb.getAllFromDb());
 		} else {
-			res.status(201).send(bookDb.getFromDbByAuthor(autor));	 	
+			res.status(200).send(bookDb.getFromDbByAuthor(autor));	 	
 		}
 	} catch (error) {
 		res.status(400).send("Nu s-a putut aduce continutul");
@@ -28,7 +28,7 @@ router.get('/:id', (req, res) => {
 		const id = req.params.id;
 		const book = bookDb.getFromDbById(id);
 
-		res.status(201).send(book);
+		res.status(200).send(book);
 
 	} catch (error) {
 		res.status(400).send("Nu s-a putut aduce continutul");
@@ -72,7 +72,7 @@ router.delete('/', (req, res) => {
 			res.status(200).send("Stergere dupa autor efectuata");
 		}
 	} catch (error) {
-		res.status(400).send("Bad request");
+		res.status(400).send("Eroare la stergere");
 	}
 });
   
@@ -81,9 +81,9 @@ router.delete('/:id', (req, res) => {
 		const id = req.params.id;
 		
 		bookDb.removeFromDbById(id);
-		res.status(200).send("Deleted (id)");
+		res.status(200).send("Stergere dupa id efectuata");
 	} catch (error) {
-		res.status(400).send("Bad request");
+		res.status(400).send("Eroare la stergere");
 	}
 });
 
