@@ -1,22 +1,77 @@
 const express = require('express');
 
 const AuthorsService = require('./services.js');
-const {
-    validateFields
-} = require('../utils');
-const {
-    ServerError
-} = require('../errors');
+const TokenService = require('../security/Jwt/index.js');
+const { validateFields } = require('../utils');
+const { ServerError } = require('../errors');
+const { authorizeRoles } = require('../security/Roles/index.js');
 
 const router = express.Router();
 
-router.post('/', async (req, res, next) => {
+router.get('/', TokenService.authorizeAndExtractToken, authorizeRoles('admin', 'user'), async (req, res, next) => {
+
+    try {
+
+        const authors = await AuthorsService.getAll();
+        res.json(authors);
+
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get('/:id', TokenService.authorizeAndExtractToken, authorizeRoles('admin', 'user'), async (req, res, next) => {
+    const {
+        id
+    } = req.params;
+
+    try {
+
+        validateFields({
+            id: {
+                value: id,
+                type: 'int'
+            }
+        });
+
+        const author = await AuthorsService.getById(parseInt(id));
+        res.json(author);
+
+    } catch (err) {
+        next(err);
+    }
+});
+
+//GET /authors/:id/books -> va returna cartile pentru autorul cu id-ul :id
+router.get('/:id/books', TokenService.authorizeAndExtractToken, authorizeRoles('admin', 'user'), async (req, res, next) => {
+    const {
+        id
+    } = req.params;
+
+    try {
+
+        validateFields({
+            id: {
+                value: id,
+                type: 'int'
+            }
+        });
+
+        const books = await AuthorsService.getBooksById(parseInt(id));
+        res.json(books);
+
+    } catch (err) {
+        next(err);
+    }
+});
+
+
+router.post('/', TokenService.authorizeAndExtractToken, authorizeRoles('admin'), async (req, res, next) => {
     const {
         first_name,
         last_name
     } = req.body;
 
-    // validare de campuri
     try {
 
         const fieldsToBeValidated = {
@@ -33,46 +88,14 @@ router.post('/', async (req, res, next) => {
         validateFields(fieldsToBeValidated);
 
         await AuthorsService.add(first_name, last_name);
-
         res.status(201).end();
+
     } catch (err) {
-        // daca primesc eroare, pasez eroarea mai departe la handler-ul de errori declarat ca middleware in start.js 
         next(err);
     }
 });
 
-router.get('/', async (req, res, next) => {
-    try {
-
-        const authors = await AuthorsService.getAll();
-        res.json(authors);
-    } catch (err) {
-        // daca primesc eroare, pasez eroarea mai departe la handler-ul de errori declarat ca middleware in start.js 
-        next(err);
-    }
-});
-
-router.get('/:id', async (req, res, next) => {
-    const {
-        id
-    } = req.params;
-    try {
-
-        validateFields({
-            id: {
-                value: id,
-                type: 'int'
-            }
-        });
-        const author = await AuthorsService.getById(parseInt(id));
-        res.json(author);
-    } catch (err) {
-        // daca primesc eroare, pasez eroarea mai departe la handler-ul de errori declarat ca middleware in start.js 
-        next(err);
-    }
-});
-
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', TokenService.authorizeAndExtractToken, authorizeRoles('admin'), async (req, res, next) => {
     const {
         id
     } = req.params;
@@ -80,6 +103,7 @@ router.put('/:id', async (req, res, next) => {
         first_name,
         last_name
     } = req.body;
+
     try {
 
         const fieldsToBeValidated = {
@@ -101,13 +125,13 @@ router.put('/:id', async (req, res, next) => {
 
         await AuthorsService.updateById(parseInt(id), first_name, last_name);
         res.status(204).end();
+
     } catch (err) {
-        // daca primesc eroare, pasez eroarea mai departe la handler-ul de errori declarat ca middleware in start.js 
         next(err);
     }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', TokenService.authorizeAndExtractToken, authorizeRoles('admin'), async (req, res, next) => {
     const {
         id
     } = req.params;
@@ -120,11 +144,11 @@ router.delete('/:id', async (req, res, next) => {
                 type: 'int'
             }
         });
-        // se poate modifica 
+
         await AuthorsService.deleteById(parseInt(id));
         res.status(204).end();
+        
     } catch (err) {
-        // daca primesc eroare, pasez eroarea mai departe la handler-ul de errori declarat ca middleware in start.js 
         next(err);
     }
 });

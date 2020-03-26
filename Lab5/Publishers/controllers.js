@@ -1,13 +1,15 @@
 const express = require('express');
 
 const PublishersService = require('./services.js');
+const TokenService = require('../security/Jwt/index.js');
 const { validateFields } = require('../utils');
 const { ServerError } = require('../errors');
+const { authorizeRoles } = require('../security/Roles/index.js');
 
 const router = express.Router();
 
 //GET /publishers -> numele editurilor
-router.get('/', async (req, res, next) => {
+router.get('/', TokenService.authorizeAndExtractToken, authorizeRoles('admin', 'user'), async (req, res, next) => {
     
     try {
 
@@ -20,7 +22,7 @@ router.get('/', async (req, res, next) => {
   });
 
 //GET /publishers/:id -> numele editurii cu id-ul dat
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', TokenService.authorizeAndExtractToken, authorizeRoles('admin', 'user'), async (req, res, next) => {
     const { 
     	id
     } = req.params;
@@ -43,7 +45,7 @@ router.get('/:id', async (req, res, next) => {
   });
 
 //POST /publishers -> inserare editura cu numele dat
-router.post('/', async (req, res, next) => {
+router.post('/', TokenService.authorizeAndExtractToken, authorizeRoles('admin'), async (req, res, next) => {
     const { 
     	name 
     } = req.body;
@@ -68,7 +70,7 @@ router.post('/', async (req, res, next) => {
   });
 
 //PUT /publishers/:id -> actualizare campuri editura cu id-ul dat (name)
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', TokenService.authorizeAndExtractToken, authorizeRoles('admin'), async (req, res, next) => {
     const {
     	id 
     } = req.params;
@@ -99,7 +101,7 @@ router.put('/:id', async (req, res, next) => {
   });
 
 //DELETE /publishers/:id -> sterge editura cu id-ul dat
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', TokenService.authorizeAndExtractToken, authorizeRoles('admin'), async (req, res, next) => {
     const {
     	id 
     } = req.params;

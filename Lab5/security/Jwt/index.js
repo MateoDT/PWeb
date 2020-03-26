@@ -25,6 +25,13 @@ const generateToken = async (payload) => {
          userRole: 
      }
     */
+    try {
+        const gentoken = await jwt.sign(payload, process.env.JWT_SECRET_KEY, options);
+        return gentoken;
+    } catch (err) {
+        console.trace(err);
+        throw new ServerError('Eroare la generarea tokenului!', 400);
+    }
 };
 
 const verifyAndDecodeData = async (token) => {
