@@ -12,4 +12,4 @@ function getElem(array, idx) {
 	console.log(array[idx]);
 }
 
-getElem(evenArray, 2, getElem);
+showElem(evenArray, 3, getElem);
